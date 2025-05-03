@@ -22,7 +22,7 @@ jobs:
 
     - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ vars.B_NAME }}@${{ vars.B_HOST }} << 'EOF'
+        ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << 'EOF'
           cd /path/to/your/app || exit 1
           git pull origin main || exit 1
           docker compose up -d --build || exit 1
