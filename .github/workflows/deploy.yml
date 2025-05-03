@@ -22,7 +22,7 @@ jobs:
 
     - name: Deploy to server
       run: |
-        ssh ${{ secrets.B_HOST }}@${{ secrets.B_HOST }} << 'EOF'
+        ssh ${{ secrets.B_NAME }}@${{ secrets.B_HOST }} << 'EOF'
           cd /path/to/your/app
           git pull origin main
           docker compose up -d --build 
