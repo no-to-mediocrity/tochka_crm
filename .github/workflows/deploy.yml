@@ -16,13 +16,13 @@ jobs:
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.B_PK }}" > ~/.ssh/id_rsa
+        echo "${{ vars.B_PK }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.B_HOST }} >> ~/.ssh/known_hosts
+        ssh-keyscan -H ${{ vars.B_HOST }} >> ~/.ssh/known_hosts
 
     - name: Deploy to server
       run: |
-        ssh ${{ secrets.B_NAME }}@${{ secrets.B_HOST }} << 'EOF'
+        ssh ${{ vars.B_NAME }}@${{ vars.B_HOST }} << 'EOF'
           cd /path/to/your/app
           git pull origin main
           docker compose up -d --build 
