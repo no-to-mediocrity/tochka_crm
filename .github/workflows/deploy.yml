@@ -22,25 +22,27 @@ jobs:
 
     - name: Deploy to server
       run: |
-        ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << 'EOF'
+        ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << "EOF"
           if [ ! -d tochkacrm ]; then
             git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm
           else
             cd tochkacrm && git pull origin main 
           fi
+
           if [ ! -d frontend ]; then
-            git clone git@github-frontend:no-to-mediocrity/{{ vars.REPO_FRONT }}.git frontend
+            git clone git@github-frontend:no-to-mediocrity/${{ vars.REPO_FRONT }}.git frontend
           else
-            cd frontend && git pull origin {{ vars.REPO_FRONT_BRANCH }} && cd ..
+            cd frontend && git pull origin ${{ vars.REPO_FRONT_BRANCH }} && cd ..
           fi
-        
+
           if [ ! -d backend ]; then
-            git clone git@github-backend:no-to-mediocrity/{{ vars.REPO_BACK }}.git backend
+            git clone git@github-backend:no-to-mediocrity/${{ vars.REPO_BACK }}.git backend
           else
             cd backend && git pull origin main && cd ..
           fi
-        
+
           docker compose -f infra-compose.yml up -d --build
           docker compose -f docker-compose.yml up -d --build
         EOF
+
 
