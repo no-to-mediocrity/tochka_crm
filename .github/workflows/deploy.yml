@@ -4,11 +4,7 @@ on:
   push:
     branches:
       - main
-
-env:
-  DB_USER: ${{ vars.DB_USER }}
-  DB_NAME: ${{ vars.DB_NAME }}
-
+      
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -45,7 +41,11 @@ jobs:
           else
             cd backend && git pull origin main && cd ..
           fi
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
+          
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export DB_USER=${{ vars.DB_USER }}
+          export DB_NAME=${{ vars.DB_NAME }}
+          
           docker compose -f infra-compose.yml up -d --build
           docker compose -f docker-compose.yml build
           docker compose -f docker-compose.yml up -d
