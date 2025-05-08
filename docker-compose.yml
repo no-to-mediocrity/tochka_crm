@@ -42,6 +42,11 @@ services:
       mail_starttls: False
       use_credentials: True
       validate_certs: True
+    command: >
+      bash -c "
+        alembic upgrade head &&
+        uvicorn server:app --host 0.0.0.0 --port ${BACKEND_PORT}
+      "
       
 networks:
   app:
