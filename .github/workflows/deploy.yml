@@ -54,7 +54,6 @@ jobs:
           export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
           export MAIL_PORT=${{ vars.MAIL_PORT }}
           
-          docker compose -f infra-compose.yml up -d 
           docker compose -f docker-compose.yml up -d --build  
           docker restart nginx
         EOF
