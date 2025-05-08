@@ -36,7 +36,7 @@ services:
       mail_username: "${MAIL_USERNAME}"
       mail_password: "${MAIL_PASSWORD}"
       mail_from: "${MAIL_FROM}"
-      mail_port: "${MAIL_PORT}"
+      mail_port: ${MAIL_PORT}
       mail_server: "${MAIL_SERVER}"
       mail_ssl_tls: True
       mail_starttls: False
