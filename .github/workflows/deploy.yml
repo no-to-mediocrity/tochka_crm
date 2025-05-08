@@ -40,27 +40,27 @@ jobs:
           else
             cd backend && git pull origin main && cd ..
           fi
-
+          
           # Build backend with Kaniko
           cd backend
           docker run --rm -v \$(pwd):/workspace gcr.io/kaniko-project/executor:latest \
-            --dockerfile=Dockerfile \
-            --context=dir:///workspace \
-            --tarPath=/workspace/backend.tar
+                --dockerfile=Dockerfile \
+                --context=dir:///workspace \
+                --tarPath=/workspace/backend.tar
           docker load -i backend.tar
           cd ..
 
           # Same for frontend if needed
           cd frontend
           docker run --rm -v \$(pwd):/workspace gcr.io/kaniko-project/executor:latest \
-            --dockerfile=Dockerfile \
-            --context=dir:///workspace \
-            --tarPath=/workspace/frontend.tar
+                --dockerfile=Dockerfile \
+                --context=dir:///workspace \
+                --tarPath=/workspace/frontend.tar
           docker load -i frontend.tar
           cd ..
 
           docker compose -f docker-compose.yml up -d
           docker compose -f infra-compose.yml up -d --build
-        EOF
+          EOF
 
 
