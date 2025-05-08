@@ -42,9 +42,6 @@ services:
       mail_starttls: False
       use_credentials: True
       validate_certs: True
-    depends_on:
-      postgres_db:
-        condition: service_healthy
       
 networks:
   app:
