@@ -43,19 +43,19 @@ jobs:
           
           # Build backend with Kaniko
           cd backend
-          docker run --rm -v \$(pwd):/workspace gcr.io/kaniko-project/executor:latest \
-                --dockerfile=Dockerfile \
-                --context=dir:///workspace \
-                --tarPath=/workspace/backend.tar
+          docker run --rm -v $(pwd):/workspace gcr.io/kaniko-project/executor:latest \
+                  --dockerfile=Dockerfile \
+                  --context=dir:///workspace \
+                  --tarPath=/workspace/backend.tar
           docker load -i backend.tar
           cd ..
-
+          
           # Same for frontend if needed
           cd frontend
-          docker run --rm -v \$(pwd):/workspace gcr.io/kaniko-project/executor:latest \
-                --dockerfile=Dockerfile \
-                --context=dir:///workspace \
-                --tarPath=/workspace/frontend.tar
+          docker run --rm -v $(pwd):/workspace gcr.io/kaniko-project/executor:latest \
+                  --dockerfile=Dockerfile \
+                  --context=dir:///workspace \
+                  --tarPath=/workspace/frontend.tar
           docker load -i frontend.tar
           cd ..
 
