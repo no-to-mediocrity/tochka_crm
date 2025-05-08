@@ -52,9 +52,8 @@ jobs:
           export BACKEND_PORT=${{ vars.BACKEND_PORT }}
           export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
           
-          docker compose -f infra-compose.yml up -d --build
-          docker compose -f docker-compose.yml build
-          docker compose -f docker-compose.yml up -d
+          docker compose -f infra-compose.yml up -d 
+          docker compose -f docker-compose.yml up -d --build
           EOF
 
 
