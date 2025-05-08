@@ -48,6 +48,8 @@ jobs:
           export DB_PORT=${{ vars.DB_PORT }}
           export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
           export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
+          export BACKEND_PORT=${{ vars.BACKEND_PORT }}
+          export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
           
           docker compose -f infra-compose.yml up -d --build
           docker compose -f docker-compose.yml build
