@@ -24,7 +24,7 @@ jobs:
       run: |
         ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << "EOF"
           if [ ! -d tochkacrm ]; then
-            git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm
+            git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
           else
             cd tochkacrm && git pull origin main 
           fi
