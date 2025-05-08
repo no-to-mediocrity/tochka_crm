@@ -53,7 +53,7 @@ jobs:
           export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
           
           docker compose -f infra-compose.yml up -d 
-          docker compose -f docker-compose.yml up -d --build
-EOF
+          docker compose -f docker-compose.yml up -d --build  
+        EOF
 
 
