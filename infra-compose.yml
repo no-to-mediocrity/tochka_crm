@@ -29,6 +29,9 @@ services:
     networks:
       - app
     restart: always
+      environment:
+        BACKEND_ADDRESS: ${BACKEND_ADDRESS};
+        FRONTEND_ADDRESS: ${FRONTEND_ADDRESS};
 
 volumes:
   postgres_data:
