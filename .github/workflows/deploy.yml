@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+env:
+  DB_USER: ${{ vars.DB_USER }}
+  DB_NAME: ${{ vars.DB_NAME }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,6 +27,7 @@ jobs:
     - name: Deploy to server
       run: |
         ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << "EOF"
+    
           if [ ! -d tochkacrm ]; then
             git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
           else
@@ -40,6 +45,7 @@ jobs:
           else
             cd backend && git pull origin main && cd ..
           fi
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" > .env
           docker compose -f infra-compose.yml up -d --build
           docker compose -f docker-compose.yml build
           docker compose -f docker-compose.yml up -d
