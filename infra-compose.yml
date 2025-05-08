@@ -25,7 +25,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf.template:ro
+      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro
     networks:
       - app
     restart: always
