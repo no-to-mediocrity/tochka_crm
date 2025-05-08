@@ -45,6 +45,9 @@ jobs:
           export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           export DB_USER=${{ vars.DB_USER }}
           export DB_NAME=${{ vars.DB_NAME }}
+          export DB_PORT=${{ vars.DB_PORT }}
+          export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
+          export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
           
           docker compose -f infra-compose.yml up -d --build
           docker compose -f docker-compose.yml build
