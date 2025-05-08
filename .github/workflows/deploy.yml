@@ -51,6 +51,7 @@ jobs:
           export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
           export BACKEND_PORT=${{ vars.BACKEND_PORT }}
           export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
+          export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
           
           docker compose -f infra-compose.yml up -d 
           docker compose -f docker-compose.yml up -d --build  
