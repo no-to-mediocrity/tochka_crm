@@ -1,0 +1,35 @@
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    # Server block
+    server {
+        listen 80;
+        server_name localhost;
+
+        location /api {
+            proxy_pass ${BACKEND_ADDRESS};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # Optional: Rewrite /api out of the path if backend doesn't expect it
+            # rewrite ^/api/(.*) /$1 break;
+        }
+
+        location / {
+            proxy_pass ${FRONTEND_ADDRESS};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
