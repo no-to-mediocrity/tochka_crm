@@ -33,6 +33,7 @@ services:
       SERVER_HOST: '0.0.0.0'
       SERVER_PORT: "${BACKEND_PORT}"
       TIMEZONE: 'Europe/Moscow'
+      frontend_branch: "${REPO_FRONT_BRANCH}"
       mail_username: "${MAIL_USERNAME}"
       mail_password: "${MAIL_PASSWORD}"
       mail_from: "${MAIL_FROM}"
@@ -42,7 +43,7 @@ services:
       mail_starttls: False
       use_credentials: True
       validate_certs: True
-      frontend_branch: "${REPO_FRONT_BRANCH}"
+
       
     command: >
       bash -c "
