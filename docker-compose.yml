@@ -42,7 +42,7 @@ services:
       mail_starttls: False
       use_credentials: True
       validate_certs: True
-      frontend_branch: ${REPO_FRONT_BRANCH}
+      frontend_branch: "${REPO_FRONT_BRANCH}"
       
     command: >
       bash -c "
