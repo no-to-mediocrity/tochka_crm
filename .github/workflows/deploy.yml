@@ -32,9 +32,12 @@ jobs:
           fi
 
           if [ ! -d frontend ]; then
-            git clone git@github-frontend:no-to-mediocrity/${{ vars.REPO_FRONT }}.git frontend
+            git clone --branch ${{ vars.REPO_FRONT_BRANCH }} git@github-frontend:no-to-mediocrity/${{ vars.REPO_FRONT }}.git frontend
           else
-            cd frontend && git pull origin ${{ vars.REPO_FRONT_BRANCH }} && cd ..
+            cd frontend
+            git fetch origin
+            git reset --hard origin/${{ vars.REPO_FRONT_BRANCH }}
+            cd ..
           fi
 
           if [ ! -d backend ]; then
