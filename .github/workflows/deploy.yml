@@ -49,6 +49,7 @@ jobs:
           export DB_PORT=${{ vars.DB_PORT }}
           export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
           export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
+          export REPO_FRONT_BRANCH=${{ vars.REPO_FRONT_BRANCH }}
           export BACKEND_PORT=${{ vars.BACKEND_PORT }}
           export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
           export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
