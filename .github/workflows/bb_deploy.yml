@@ -1,0 +1,67 @@
+name: B Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.BB_PK }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ vars.BB_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      run: |
+        ssh ${{ vars.BB_USER }}@${{ vars.BB_HOST }} << "EOF"
+    
+          if [ ! -d tochkacrm ]; then
+            git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
+          else
+            cd tochkacrm && git pull origin main 
+          fi
+
+          if [ ! -d frontend ]; then
+            git clone --branch main git@github-frontend:no-to-mediocrity/${{ vars.REPO_FRONT }}.git frontend
+          else
+            cd frontend
+            git fetch origin
+            git reset --hard origin/main
+            cd ..
+          fi
+
+          if [ ! -d backend ]; then
+            git clone git@github-backend:no-to-mediocrity/${{ vars.REPO_BACK }}.git backend
+          else
+            cd backend && git pull origin main && cd ..
+          fi
+          
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD_BB }}
+          export DB_USER=${{ vars.DB_USER_BB }}
+          export DB_NAME=${{ vars.DB_NAME_BB }}
+          export DB_PORT=${{ vars.DB_PORT_BB }}
+          export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
+          export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
+          export REPO_FRONT_BRANCH=main
+          export BACKEND_PORT=${{ vars.BACKEND_PORT }}
+          export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
+          export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
+          export MAIL_PORT=${{ vars.MAIL_PORT }}
+
+          docker rm -f tochkacrm-frontend-1 || true
+          docker rm -f tochkacrm-backend-1 || true
+          docker compose -f docker-compose.yml up -d --build  
+          docker restart nginx
+        EOF
+
+
