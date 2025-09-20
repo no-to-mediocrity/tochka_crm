@@ -23,7 +23,7 @@ jobs:
 
     - name: Deploy to server
       run: |
-        ssh ${{ vars.BB_USER }}@${{ vars.BB_HOST }} << "EOF"
+        ssh ${{ vars.BB_USER }}@${{ secrets.BB_HOST }} << "EOF"
     
           if [ ! -d tochkacrm ]; then
             git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
