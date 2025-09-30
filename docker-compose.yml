@@ -89,5 +89,8 @@ volumes:
   postgres_data:
 
 networks:
-  app:
+  webnet:
     driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET_ADDRESS}
