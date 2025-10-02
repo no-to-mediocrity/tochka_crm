@@ -12,6 +12,8 @@ services:
       VITE_API_URL: /api
       VITE_API_VERSION: v0.0.2
       VITE_API_VERSION_NEW: v1
+    depends_on:
+      - backend
 
   backend:
     build:
@@ -25,43 +27,44 @@ services:
     environment:
       DATABASE_NAME: "${DB_NAME}"
       DATABASE_USER: "${DB_USER}"
-      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_PASSWORD: "${DB_PASSWORD}"
       DATABASE_HOST: postgres_db
-      DATABASE_PORT: 5432
-      POSTGRES_POOL_MINSIZE: '10'
-      POSTGRES_POOL_MAXSIZE: '50'
-      SERVER_HOST: '0.0.0.0'
+      DATABASE_PORT: "5432"
+      POSTGRES_POOL_MINSIZE: "10"
+      POSTGRES_POOL_MAXSIZE: "50"
+      SERVER_HOST: "0.0.0.0"
       SERVER_PORT: "${BACKEND_PORT}"
-      TIMEZONE: 'Europe/Moscow'
+      TIMEZONE: "Europe/Moscow"
       frontend_branch: "${REPO_FRONT_BRANCH}"
       mail_username: "${MAIL_USERNAME}"
       mail_password: "${MAIL_PASSWORD}"
       mail_from: "${MAIL_FROM}"
-      mail_port: ${MAIL_PORT}
+      mail_port: "${MAIL_PORT}"
       mail_server: "${MAIL_SERVER}"
-      mail_ssl_tls: True
-      mail_starttls: False
-      use_credentials: True
-      validate_certs: True
-
-      
+      mail_ssl_tls: "True"
+      mail_starttls: "False"
+      use_credentials: "True"
+      validate_certs: "True"
     command: >
-      bash -c "
+      bash -lc "
         alembic upgrade head &&
-        uvicorn server:app --host 0.0.0.0 --port ${BACKEND_PORT} --forwarded-allow-ips=${SUBNET_ADDRESS}'
+        uvicorn server:app --host 0.0.0.0 --port ${BACKEND_PORT} --forwarded-allow-ips=*
       "
+    depends_on:
+      postgres_db:
+        condition: service_healthy
 
   postgres_db:
     image: postgres:17
     container_name: postgres_db
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_NAME}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "${DB_PORT}:5432"  
+      - "${DB_PORT}:5432"
     networks:
       - app
     restart: always
@@ -69,7 +72,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   nginx:
     image: nginx:alpine
@@ -77,20 +80,23 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro
+      - "${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro"
     networks:
       - app
     restart: always
     environment:
-      backend_address: ${BACKEND_ADDRESS}
-      frontend_address: ${FRONTEND_ADDRESS}
+      backend_address: "${BACKEND_ADDRESS}"
+      frontend_address: "${FRONTEND_ADDRESS}"
+    depends_on:
+      - frontend
+      - backend
 
 volumes:
   postgres_data:
 
 networks:
-  webnet:
+  app:
     driver: bridge
     ipam:
       config:
-        - subnet: ${SUBNET_ADDRESS}
+        - subnet: "${SUBNET_ADDRESS}"
