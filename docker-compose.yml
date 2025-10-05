@@ -45,6 +45,7 @@ services:
       mail_starttls: "False"
       use_credentials: "True"
       validate_certs: "True"
+      development_mode: "${DEVELOPMENT_MODE}"
     command: >
       bash -lc "
         alembic upgrade head &&
