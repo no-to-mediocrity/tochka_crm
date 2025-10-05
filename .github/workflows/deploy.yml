@@ -56,8 +56,11 @@ jobs:
           export BACKEND_PORT=${{ vars.BACKEND_PORT }}
           export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
           export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
-          export MAIL_PORT=${{ vars.MAIL_PORT }}
           export SUBNET_ADDRESS=${{secrets.SUBNET_ADDRESS}}
+          export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+          export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+          export MAIL_PORT=${{ vars.MAIL_PORT }}
+          export MAIL_SERVER${{ vars.MAIL_SERVER }}
 
           docker rm -f tochkacrm-frontend-1 || true
           docker rm -f tochkacrm-backend-1 || true
