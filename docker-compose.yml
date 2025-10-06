@@ -46,6 +46,7 @@ services:
       use_credentials: "True"
       validate_certs: "True"
       development_mode: "${DEVELOPMENT_MODE}"
+      frontend_url: "${FRONTEND_URL}"
     command: >
       bash -lc "
         alembic upgrade head &&
