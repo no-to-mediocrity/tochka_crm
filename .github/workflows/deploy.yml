@@ -62,6 +62,7 @@ jobs:
           export MAIL_PORT=${{ vars.MAIL_PORT }}
           export MAIL_SERVER=${{ vars.MAIL_SERVER }}
           export DEVELOPMENT_MODE=${{ secrets.DEVELOPMENT_MODE }}
+          export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
 
           docker rm -f tochkacrm-frontend-1 || true
           docker rm -f tochkacrm-backend-1 || true
