@@ -3,11 +3,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     restart: always
-    networks:
-      - app
+    networks: [app]
     environment:
       VITE_API_URL: /api
       VITE_API_VERSION: v0.0.2
@@ -19,11 +16,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
     restart: always
-    networks:
-      - app
+    networks: [app]
     environment:
       DATABASE_NAME: "${DB_NAME}"
       DATABASE_USER: "${DB_USER}"
@@ -33,7 +27,7 @@ services:
       POSTGRES_POOL_MINSIZE: "10"
       POSTGRES_POOL_MAXSIZE: "50"
       SERVER_HOST: "0.0.0.0"
-      SERVER_PORT: "${BACKEND_PORT}"
+      SERVER_PORT: "8000"
       TIMEZONE: "Europe/Moscow"
       frontend_branch: "${REPO_FRONT_BRANCH}"
       mail_username: "${MAIL_USERNAME}"
@@ -50,7 +44,7 @@ services:
     command: >
       bash -lc "
         alembic upgrade head &&
-        uvicorn server:app --host 0.0.0.0 --port ${BACKEND_PORT} --forwarded-allow-ips=*
+        uvicorn server:app --host 0.0.0.0 --port 8000 --forwarded-allow-ips=*
       "
     depends_on:
       postgres_db:
@@ -65,10 +59,7 @@ services:
       POSTGRES_DB: "${DB_NAME}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${DB_PORT}:5432"
-    networks:
-      - app
+    networks: [app]
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
@@ -79,19 +70,18 @@ services:
   nginx:
     image: nginx:alpine
     container_name: nginx
-    ports:
-      - "80:80"
-    volumes:
-      - "${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro"
-    networks:
-      - app
-    restart: always
-    environment:
-      backend_address: "${BACKEND_ADDRESS}"
-      frontend_address: "${FRONTEND_ADDRESS}"
     depends_on:
       - frontend
       - backend
+    networks: [app]
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro"
+      - "/etc/letsencrypt:/etc/letsencrypt:ro"
+      - "./nginx/logs:/var/log/nginx"
 
 volumes:
   postgres_data:
