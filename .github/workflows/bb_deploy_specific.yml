@@ -6,7 +6,6 @@ on:
       frontend_ref:
         description: 'Frontend commit SHA / tag / branch (default: main)'
         required: false
-        default: 'main'
   push:
     branches:
       - main
@@ -28,10 +27,10 @@ jobs:
 
       - name: Deploy to server
         run: |
-          FRONTEND_REF="${{ github.event.inputs.frontend_ref || 'main' }}"
+          FRONTEND_REF="${{ github.event.inputs.frontend_ref }}"
+          [ -z "$FRONTEND_REF" ] && FRONTEND_REF="main"
 
           ssh ${{ vars.BB_USER }}@${{ secrets.BB_HOST }} << EOF
-
             set -e
 
             # === Base repo ===
@@ -51,7 +50,7 @@ jobs:
             cd frontend
             git fetch --all
             echo "Deploying frontend ref: $FRONTEND_REF"
-            git checkout --force $FRONTEND_REF
+            git checkout --force "$FRONTEND_REF"
             cd ..
 
             # === Backend (always main) ===
@@ -71,7 +70,7 @@ jobs:
             export DB_PORT=${{ vars.DB_PORT_BB }}
             export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
             export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
-            export REPO_FRONT_BRANCH=$FRONTEND_REF
+            export REPO_FRONT_BRANCH="$FRONTEND_REF"
             export BACKEND_PORT=${{ vars.BACKEND_PORT }}
             export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
             export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
@@ -89,5 +88,4 @@ jobs:
 
             docker compose -f docker-compose.yml up -d --build
             docker restart nginx
-
           EOF
