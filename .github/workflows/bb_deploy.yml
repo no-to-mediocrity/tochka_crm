@@ -1,4 +1,4 @@
-name: BB Deployment
+name: BB Deployment (latest)
 
 on:
   workflow_dispatch:
