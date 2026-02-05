@@ -82,7 +82,7 @@ services:
       - "${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro"
       - "/etc/letsencrypt:/etc/letsencrypt:ro"
       - "./nginx/logs:/var/log/nginx"
-      - "./html:/usr/share/nginx/html"
+      - "/usr/share/nginx/html/:/usr/share/nginx/html"
 
 
 volumes:
