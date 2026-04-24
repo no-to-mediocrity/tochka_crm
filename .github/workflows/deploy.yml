@@ -43,7 +43,10 @@ jobs:
           if [ ! -d backend ]; then
             git clone --branch ${{ vars.REPO_BACK_BRANCH }} git@github-backend:no-to-mediocrity/${{ vars.REPO_BACK }}.git backend
           else
-            cd backend && git pull origin main && cd ..
+            cd backend 
+            git fetch origin
+            git reset --hard origin/${{ vars.REPO_BACK_BRANCH }}
+            cd ..
           fi
           
           export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
