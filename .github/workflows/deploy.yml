@@ -1,77 +1,73 @@
-name: B Deployment
+name: Deploy
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
-      
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Set up SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.B_PK }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ vars.B_HOST }} >> ~/.ssh/known_hosts
+      #
+      # Checkout frontend repo
+      #
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          repository: no-to-mediocrity/${{ vars.REPO_FRONT }}
+          path: frontend
+          ssh-key: ${{ secrets.FRONTEND_DEPLOY_KEY }}
 
-    - name: Deploy to server
-      run: |
-        ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << "EOF"
-    
-          if [ ! -d tochkacrm ]; then
-            git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
-          else
-            cd tochkacrm && git pull origin main 
-          fi
+      #
+      # Checkout backend repo
+      #
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: no-to-mediocrity/${{ vars.REPO_BACK }}
+          path: backend
+          ssh-key: ${{ secrets.BACKEND_DEPLOY_KEY }}
 
-          if [ ! -d frontend ]; then
-            git clone --branch ${{ vars.REPO_FRONT_BRANCH }} git@github-frontend:no-to-mediocrity/${{ vars.REPO_FRONT }}.git frontend
-          else
-            cd frontend
-            git fetch origin
-            git reset --hard origin/${{ vars.REPO_FRONT_BRANCH }}
-            cd ..
-          fi
+      #
+      # Login to GHCR
+      #
+      - name: Login to GHCR
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login ghcr.io \
+                -u ${{ github.actor }} \
+                --password-stdin
 
-          if [ ! -d backend ]; then
-            git clone --branch ${{ vars.REPO_BACK_BRANCH }} git@github-backend:no-to-mediocrity/${{ vars.REPO_BACK }}.git backend
-          else
-            cd backend 
-            git fetch origin
-            git reset --hard origin/${{ vars.REPO_BACK_BRANCH }}
-            cd ..
-          fi
-          
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_USER=${{ vars.DB_USER }}
-          export DB_NAME=${{ vars.DB_NAME }}
-          export DB_PORT=${{ vars.DB_PORT }}
-          export BACKEND_ADDRESS=${{ vars.BACKEND_ADDRESS }}
-          export FRONTEND_ADDRESS=${{ vars.FRONTEND_ADDRESS }}
-          export REPO_FRONT_BRANCH=${{ vars.REPO_FRONT_BRANCH }}
-          export REPO_BACK_BRANCH=${{ vars.REPO_BACK_BRANCH }}
-          export BACKEND_PORT=${{ vars.BACKEND_PORT }}
-          export FRONTEND_PORT=${{ vars.FRONTEND_PORT }}
-          export NGINX_CONFIG_PATH=${{ vars.NGINX_CONFIG_PATH }}
-          export SUBNET_ADDRESS=${{secrets.SUBNET_ADDRESS}}
-          export MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-          export MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-          export MAIL_PORT=${{ vars.MAIL_PORT }}
-          export MAIL_SERVER=${{ vars.MAIL_SERVER }}
-          export DEVELOPMENT_MODE=${{ secrets.DEVELOPMENT_MODE }}
-          export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+      #
+      # Build frontend
+      #
+      - name: Build frontend image
+        run: |
+          docker build \
+            -t ghcr.io/no-to-mediocrity/tochkacrm-frontend:latest \
+            ./frontend
 
-          docker rm -f tochkacrm-frontend-1 || true
-          docker rm -f tochkacrm-backend-1 || true
-          docker compose -f docker-compose.yml up -d --build  
-          docker restart nginx
-        EOF
+      #
+      # Build backend
+      #
+      - name: Build backend image
+        run: |
+          docker build \
+            -t ghcr.io/no-to-mediocrity/tochkacrm-backend:latest \
+            ./backend
 
-
+      #
+      # Push images
+      #
+      - name: Push frontend
+        run: |
+          docker push ghcr
