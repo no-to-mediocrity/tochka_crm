@@ -1,21 +1,15 @@
 services:
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/no-to-mediocrity/tochka-frontend:latest
     restart: always
     networks: [app]
     environment:
       VITE_API_URL: /api
       VITE_API_VERSION: v0.0.2
       VITE_API_VERSION_NEW: v1
-    depends_on:
-      - backend
 
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/no-to-mediocrity/tochka-backend:latest
     restart: always
     networks: [app]
     environment:
@@ -24,27 +18,14 @@ services:
       DATABASE_PASSWORD: "${DB_PASSWORD}"
       DATABASE_HOST: postgres_db
       DATABASE_PORT: "5432"
-      POSTGRES_POOL_MINSIZE: "10"
-      POSTGRES_POOL_MAXSIZE: "50"
       SERVER_HOST: "0.0.0.0"
       SERVER_PORT: "8000"
-      TIMEZONE: "Europe/Moscow"
-      frontend_branch: "${REPO_FRONT_BRANCH}"
-      mail_username: "${MAIL_USERNAME}"
-      mail_password: "${MAIL_PASSWORD}"
-      mail_from: "${MAIL_FROM}"
-      mail_port: "${MAIL_PORT}"
-      mail_server: "${MAIL_SERVER}"
-      mail_ssl_tls: "True"
-      mail_starttls: "False"
-      use_credentials: "True"
-      validate_certs: "True"
       development_mode: "${DEVELOPMENT_MODE}"
       frontend_url: "${FRONTEND_URL}"
     command: >
       bash -lc "
         alembic upgrade head &&
-        uvicorn server:app --host 0.0.0.0 --port 8000 --forwarded-allow-ips=*
+        uvicorn server:app --host 0.0.0.0 --port 8000
       "
     depends_on:
       postgres_db:
@@ -53,6 +34,7 @@ services:
   postgres_db:
     image: postgres:17
     container_name: postgres_db
+    restart: always
     environment:
       POSTGRES_USER: "${DB_USER}"
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
@@ -60,7 +42,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks: [app]
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
@@ -81,9 +62,6 @@ services:
     volumes:
       - "${NGINX_CONFIG_PATH}:/etc/nginx/nginx.conf:ro"
       - "/etc/letsencrypt:/etc/letsencrypt:ro"
-      - "./nginx/logs:/var/log/nginx"
-      - "/usr/share/nginx/html/:/usr/share/nginx/html"
-
 
 volumes:
   postgres_data:
@@ -91,6 +69,3 @@ volumes:
 networks:
   app:
     driver: bridge
-    ipam:
-      config:
-        - subnet: "${SUBNET_ADDRESS}"
