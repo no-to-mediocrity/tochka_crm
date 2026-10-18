@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -24,11 +24,11 @@ jobs:
     - name: Deploy to server
       run: |
         ssh ${{ vars.B_USER }}@${{ vars.B_HOST }} << "EOF"
-    
+
           if [ ! -d tochkacrm ]; then
             git clone git@github-base:no-to-mediocrity/tochka_crm.git tochkacrm && cd tochkacrm
           else
-            cd tochkacrm && git pull origin main 
+            cd tochkacrm && git pull origin main
           fi
 
           if [ ! -d frontend ]; then
@@ -43,12 +43,12 @@ jobs:
           if [ ! -d backend ]; then
             git clone --branch ${{ vars.REPO_BACK_BRANCH }} git@github-backend:no-to-mediocrity/${{ vars.REPO_BACK }}.git backend
           else
-            cd backend 
+            cd backend
             git fetch origin
             git reset --hard origin/${{ vars.REPO_BACK_BRANCH }}
             cd ..
           fi
-          
+
           export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
           export DB_USER=${{ vars.DB_USER }}
           export DB_NAME=${{ vars.DB_NAME }}
@@ -68,10 +68,38 @@ jobs:
           export DEVELOPMENT_MODE=${{ secrets.DEVELOPMENT_MODE }}
           export FRONTEND_URL=${{ secrets.FRONTEND_URL }}
 
+          # --- S3 file storage ---
+          export S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }}
+          export S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }}
+          export S3_BUCKET=${{ vars.S3_BUCKET || 'tochkacrm' }}
+          export S3_DATA_PATH="${{ vars.S3_DATA_PATH }}"
+          [ -n "$S3_DATA_PATH" ] || export S3_DATA_PATH="$HOME/tochkacrm-data/s3"
+          mkdir -p "$S3_DATA_PATH"
+
+          # One time: document templates used to live inside the backend
+          # container (no volume), so save them before it is removed.
+          LEGACY_TEMPLATES="$HOME/tochkacrm-data/legacy_document_templates"
+          if [ ! -d "$LEGACY_TEMPLATES" ] && docker ps -a --format '{{.Names}}' | grep -qx tochkacrm-backend-1; then
+            docker cp tochkacrm-backend-1:/app/storage/document_templates "$LEGACY_TEMPLATES" \
+              && echo "saved old document templates to $LEGACY_TEMPLATES" \
+              || echo "no old document templates in the backend container"
+          fi
+
           docker rm -f tochkacrm-frontend-1 || true
           docker rm -f tochkacrm-backend-1 || true
-          docker compose -f docker-compose.yml up -d --build  
+          # the s3 and postgres containers are left running
+          docker compose -f docker-compose.yml up -d --build
           docker restart nginx
+
+          # One time: copy the saved templates into S3 (waits for migrations)
+          if [ -d "$LEGACY_TEMPLATES" ] && [ ! -f "$LEGACY_TEMPLATES/.migrated" ]; then
+            docker compose cp "$LEGACY_TEMPLATES" backend:/tmp/legacy_document_templates
+            for attempt in $(seq 1 30); do
+              if docker compose exec -T backend python -m scripts.migrate_files_to_s3 --source /tmp/legacy_document_templates; then
+                touch "$LEGACY_TEMPLATES/.migrated"
+                break
+              fi
+              sleep 5
+            done
+          fi
         EOF
-
-
